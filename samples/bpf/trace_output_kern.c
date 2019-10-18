@@ -13,6 +13,7 @@ struct bpf_map_def SEC("maps") my_map = {
 SEC("kprobe/sys_write")
 int bpf_prog1(struct pt_regs *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	struct S {
 		u64 pid;
 		u64 cookie;
@@ -22,7 +23,9 @@ int bpf_prog1(struct pt_regs *ctx)
 	data.cookie = 0x12345678;
 
 	bpf_perf_event_output(ctx, &my_map, 0, &data, sizeof(data));
-
+	long t2 = bpf_ktime_get_ns();
+	char fmt2[] = "\n\nTime elapsed (trace_output): %d\n\n";
+	bpf_trace_printk(fmt2, sizeof(fmt2), (t2-t1));
 	return 0;
 }
 

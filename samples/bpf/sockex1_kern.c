@@ -14,6 +14,7 @@ struct bpf_map_def SEC("maps") my_map = {
 SEC("socket1")
 int bpf_prog1(struct __sk_buff *skb)
 {
+	long t1 = bpf_ktime_get_ns();
 	int index = load_byte(skb, ETH_HLEN + offsetof(struct iphdr, protocol));
 	long *value;
 
@@ -24,6 +25,9 @@ int bpf_prog1(struct __sk_buff *skb)
 	if (value)
 		__sync_fetch_and_add(value, skb->len);
 
+	long t2 = bpf_ktime_get_ns();
+	char fmt[] = "\n\nTime stamp (sockex1): %d\n\n";
+	bpf_trace_printk(fmt, sizeof(fmt), (t2-t1));
 	return 0;
 }
 char _license[] SEC("license") = "GPL";

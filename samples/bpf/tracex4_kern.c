@@ -36,6 +36,7 @@ int bpf_prog1(struct pt_regs *ctx)
 SEC("kretprobe/kmem_cache_alloc_node")
 int bpf_prog2(struct pt_regs *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	long ptr = PT_REGS_RC(ctx);
 	long ip = 0;
 
@@ -48,6 +49,9 @@ int bpf_prog2(struct pt_regs *ctx)
 	};
 
 	bpf_map_update_elem(&my_map, &ptr, &v, BPF_ANY);
+	long t2 = bpf_ktime_get_ns();
+	char fmt2[] = "\n\nTime elapsed (tracex_4): %d\n\n";
+	bpf_trace_printk(fmt2, sizeof(fmt2), (t2-t1));
 	return 0;
 }
 char _license[] SEC("license") = "GPL";

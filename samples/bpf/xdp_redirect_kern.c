@@ -55,6 +55,7 @@ static void swap_src_dst_mac(void *data)
 SEC("xdp_redirect")
 int xdp_redirect_prog(struct xdp_md *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
 	struct ethhdr *eth = data;
@@ -77,6 +78,9 @@ int xdp_redirect_prog(struct xdp_md *ctx)
 		*value += 1;
 
 	swap_src_dst_mac(data);
+	long t2 = bpf_ktime_get_ns();
+	char fmt[] = "\n\nTime stamp (xdp_redirect): %d\n\n";
+	bpf_trace_printk(fmt, sizeof(fmt), (t2-t1));
 	return bpf_redirect(*ifindex, 0);
 }
 

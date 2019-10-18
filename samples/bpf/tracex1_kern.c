@@ -20,6 +20,7 @@
 SEC("kprobe/__netif_receive_skb_core")
 int bpf_prog1(struct pt_regs *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	/* attaches to kprobe netif_receive_skb,
 	 * looks for packets on loobpack device and prints them
 	 */
@@ -40,6 +41,10 @@ int bpf_prog1(struct pt_regs *ctx)
 		/* using bpf_trace_printk() for DEBUG ONLY */
 		bpf_trace_printk(fmt, sizeof(fmt), skb, len);
 	}
+
+	long t2 = bpf_ktime_get_ns();
+	char fmt2[] = "\n\nTime elapsed (tracex_1): %d\n\n";
+	bpf_trace_printk(fmt2, sizeof(fmt2), (t2-t1));
 
 	return 0;
 }

@@ -22,6 +22,7 @@ struct bpf_map_def SEC("maps") ip_map = {
 SEC("perf_event")
 int do_sample(struct bpf_perf_event_data *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	u64 ip;
 	u32 *value, init_val = 1;
 
@@ -33,6 +34,9 @@ int do_sample(struct bpf_perf_event_data *ctx)
 		/* E2BIG not tested for this example only */
 		bpf_map_update_elem(&ip_map, &ip, &init_val, BPF_NOEXIST);
 
+	long t2 = bpf_ktime_get_ns();
+	char fmt[] = "\n\nTime stamp (sampleip): %d\n\n";
+	bpf_trace_printk(fmt, sizeof(fmt), (t2-t1));
 	return 0;
 }
 char _license[] SEC("license") = "GPL";

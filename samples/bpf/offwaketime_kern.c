@@ -117,6 +117,7 @@ struct sched_switch_args {
 SEC("tracepoint/sched/sched_switch")
 int oncpu(struct sched_switch_args *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	/* record previous thread sleep time */
 	u32 pid = ctx->prev_pid;
 #else
@@ -145,6 +146,9 @@ int oncpu(struct pt_regs *ctx)
 	if (delta < MINBLOCK_US)
 		return 0;
 
+	long t2 = bpf_ktime_get_ns();
+	char fmt[] = "\n\nTime stamp (offwaketime): %d\n\n";
+	bpf_trace_printk(fmt, sizeof(fmt), (t2-t1));
 	return update_counts(ctx, pid, delta);
 }
 char _license[] SEC("license") = "GPL";

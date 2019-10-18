@@ -42,6 +42,7 @@ static int parse_ipv6(void *data, u64 nh_off, void *data_end)
 SEC("xdp1")
 int xdp_prog1(struct xdp_md *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
 	struct ethhdr *eth = data;
@@ -86,7 +87,9 @@ int xdp_prog1(struct xdp_md *ctx)
 	value = bpf_map_lookup_elem(&rxcnt, &ipproto);
 	if (value)
 		*value += 1;
-
+	long t2 = bpf_ktime_get_ns();
+	char fmt[] = "\n\nTime stamp (xdp_1): %d\n\n";
+	bpf_trace_printk(fmt, sizeof(fmt), (t2-t1));
 	return rc;
 }
 

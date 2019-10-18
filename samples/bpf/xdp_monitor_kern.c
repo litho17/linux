@@ -235,6 +235,7 @@ struct devmap_xmit_ctx {
 SEC("tracepoint/xdp/xdp_devmap_xmit")
 int trace_xdp_devmap_xmit(struct devmap_xmit_ctx *ctx)
 {
+	long t1 = bpf_ktime_get_ns();
 	struct datarec *rec;
 	u32 key = 0;
 
@@ -254,6 +255,8 @@ int trace_xdp_devmap_xmit(struct devmap_xmit_ctx *ctx)
 	/* Catch API error of drv ndo_xdp_xmit sent more than count */
 	if (ctx->drops < 0)
 		rec->err++;
-
+	long t2 = bpf_ktime_get_ns();
+	char fmt[] = "\n\nTime stamp (xdp_monitor): %d\n\n";
+	bpf_trace_printk(fmt, sizeof(fmt), (t2-t1));
 	return 1;
 }
